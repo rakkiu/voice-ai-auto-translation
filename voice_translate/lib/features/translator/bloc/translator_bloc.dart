@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/services/stt/stt_service.dart';
 import '../../../core/services/tts/tts_service.dart';
+import '../../../core/services/llm/llm_service.dart';
 import 'translator_event.dart';
 import 'translator_state.dart';
 
@@ -8,8 +10,10 @@ class TranslatorBloc extends Bloc<TranslatorEvent, TranslatorState> {
   TranslatorBloc({
     required SttService sttService,
     required TtsService ttsService,
+    required LlmService llmService,
   })  : _stt = sttService,
         _tts = ttsService,
+        _llm = llmService,
         super(const TranslatorState()) {
     on<RecordingStarted>(_onRecordingStarted);
     on<RecordingStopped>(_onRecordingStopped);
@@ -21,6 +25,7 @@ class TranslatorBloc extends Bloc<TranslatorEvent, TranslatorState> {
 
   final SttService _stt;
   final TtsService _tts;
+  final LlmService _llm;
 
   Future<void> _onRecordingStarted(
     RecordingStarted event,
@@ -56,18 +61,32 @@ class TranslatorBloc extends Bloc<TranslatorEvent, TranslatorState> {
 
       emit(state.copyWith(
         originalText: transcript,
-        translatedText: '[Translation coming in Sprint 2]',
+        status: TranslatorStatus.translating,
+      ));
+
+      final translation = await _llm.translate(
+        text: transcript,
+        sourceLang:
+            AppConstants.languageNames[state.sourceLanguage.whisperCode]!,
+        targetLang:
+            AppConstants.languageNames[state.targetLanguage.whisperCode]!,
+      );
+
+      emit(state.copyWith(
+        translatedText: translation,
         status: TranslatorStatus.idle,
       ));
 
-      add(PlaybackRequested(
-        text: transcript,
-        language: state.sourceLanguage,
-      ));
+      if (translation.isNotEmpty) {
+        add(PlaybackRequested(
+          text: translation,
+          language: state.targetLanguage,
+        ));
+      }
     } catch (e) {
       emit(state.copyWith(
         status: TranslatorStatus.error,
-        errorMessage: 'Lỗi nhận dạng giọng nói: $e',
+        errorMessage: 'Pipeline error: $e',
       ));
     }
   }

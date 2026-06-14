@@ -4,6 +4,8 @@ import '../services/stt/stt_service.dart';
 import '../services/stt/whisper_stt_service.dart';
 import '../services/tts/tts_service.dart';
 import '../services/tts/flutter_tts_service.dart';
+import '../services/llm/llm_service.dart';
+import '../services/llm/gemma_mediapipe_service.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -17,5 +19,8 @@ Future<void> setupDependencies() async {
   );
   sl.registerLazySingleton<TtsService>(
     () => FlutterTtsService(logger: sl<Logger>()),
+  );
+  sl.registerLazySingleton<LlmService>(
+    () => GemmaMediaPipeService(logger: sl<Logger>()),
   );
 }

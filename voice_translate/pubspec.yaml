@@ -17,7 +17,6 @@ dependencies:
   flutter_tts: ^4.0.2
   permission_handler: ^11.3.0
   get_it: ^7.7.0
-  http: ^1.2.0
   logger: ^2.3.0
   uuid: ^4.4.0
 
@@ -30,5 +29,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/models/
+    - assets/models/ggml-base.bin
+    - assets/models/gemma-2b-it-cpu-int4.bin
 
