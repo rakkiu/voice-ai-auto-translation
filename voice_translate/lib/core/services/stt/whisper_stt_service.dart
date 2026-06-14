@@ -43,7 +43,7 @@ class WhisperSttService implements SttService {
     if (await file.exists()) await file.delete();
 
     await _recorder.start(
-      RecordConfig(
+      const RecordConfig(
         encoder: AudioEncoder.wav,
         sampleRate: 16000,
         numChannels: 1,
